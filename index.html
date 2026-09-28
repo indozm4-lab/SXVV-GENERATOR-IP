@@ -1,0 +1,422 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0a0b0f">
+<title>SXVV Chat Generator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+  --bg:#0a0b0f; --panel:#15161c; --field:#1c1e26; --line:#2a2c36;
+  --text:#f3f2ee; --dim:#8d8fa0; --amber:#ffb15e; --amber-dim:#3a2c1c;
+  --bubble-in:#2e2d33; --bubble-out-a:#2f8bff; --bubble-out-b:#0b6cff;
+}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif;min-height:100%;position:relative;overflow-x:hidden}
+body:before{content:"";position:fixed;inset:-12%;z-index:0;pointer-events:none;
+  background:
+    radial-gradient(38% 30% at 16% 18%,#ff8a5b59,transparent 60%),
+    radial-gradient(34% 28% at 86% 14%,#6366f159,transparent 60%),
+    radial-gradient(40% 32% at 22% 86%,#22d3ee4d,transparent 60%),
+    radial-gradient(36% 30% at 82% 82%,#d946ef4d,transparent 60%);
+  filter:blur(70px);
+  animation:auroraDrift 24s ease-in-out infinite alternate}
+@keyframes auroraDrift{0%{transform:translate(0,0) scale(1)}50%{transform:translate(3%,-4%) scale(1.08)}100%{transform:translate(-3%,3%) scale(1)}}
+
+.wrap{position:relative;z-index:1;max-width:440px;margin:0 auto;padding:28px 16px 40px}
+
+.brand{display:flex;align-items:center;gap:11px;margin-bottom:22px}
+.mark{width:40px;height:40px;border-radius:11px;background:var(--amber);display:grid;place-items:center;font-weight:800;font-size:16px;color:#241804;flex-shrink:0}
+.brand h1{font-size:16px;font-weight:700;margin:0;letter-spacing:.1px}
+.brand p{margin:1px 0 0;font-size:12px;color:var(--dim)}
+
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:16px}
+.section-label{font-size:11px;font-weight:700;color:var(--amber);text-transform:uppercase;letter-spacing:.6px;margin:0 0 10px}
+.row{display:flex;gap:10px}
+.row .field{flex:1}
+.field{margin-bottom:12px}
+.field:last-child{margin-bottom:0}
+label{display:block;font-size:12px;color:var(--dim);margin:0 0 6px;font-weight:500}
+input,select,textarea{width:100%;border:1px solid var(--line);background:var(--field);color:var(--text);border-radius:10px;padding:10px 12px;font-size:14px;font-family:inherit;outline:none;transition:border-color .15s}
+input:focus,select:focus,textarea:focus{border-color:var(--amber)}
+textarea{resize:vertical;min-height:70px;line-height:1.4}
+select{appearance:none;background-image:linear-gradient(45deg,transparent 50%,var(--dim) 50%),linear-gradient(135deg,var(--dim) 50%,transparent 50%);background-position:calc(100% - 16px) center,calc(100% - 11px) center;background-size:5px 5px;background-repeat:no-repeat}
+
+.timerow{display:flex;gap:8px}
+.timerow input{flex:1}
+.nowbtn{flex-shrink:0;border:1px solid var(--line);background:var(--field);color:var(--dim);border-radius:10px;padding:0 13px;font-size:12px;font-weight:600;cursor:pointer}
+.nowbtn:active{transform:scale(.96)}
+
+.divider{height:1px;background:var(--line);margin:16px 0}
+
+button.generate{width:100%;border:0;border-radius:13px;padding:13px;color:#241804;font-weight:700;font-size:14px;background:var(--amber);cursor:pointer;margin-top:16px;letter-spacing:.2px}
+button.generate:active{transform:scale(.98)}
+
+.resultTitle{text-align:center;color:var(--dim);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;margin:30px 0 14px}
+
+.phoneOuter{display:flex;justify-content:center}
+.phone{width:100%;max-width:300px;background:#000;border-radius:36px;padding:8px;box-shadow:0 25px 60px #0009, inset 0 0 0 1px #2c2c30}
+.screen{background:linear-gradient(180deg,#000 0%,#07080b 100%);border-radius:29px;overflow:hidden;position:relative}
+.notch{position:absolute;top:9px;left:50%;transform:translateX(-50%);width:84px;height:22px;background:#000;border-radius:14px;z-index:5}
+.homebar{position:absolute;bottom:7px;left:50%;transform:translateX(-50%);width:96px;height:4px;background:#fff;border-radius:3px;opacity:.85;z-index:5}
+.status{display:flex;justify-content:space-between;align-items:center;padding:20px 18px 4px;font-size:11px;font-weight:600;color:#fff}
+.status .time{font-variant-numeric:tabular-nums;font-size:9.5px}
+.stat-right{display:flex;align-items:center;gap:2.5px;font-size:9.5px;max-width:135px}
+.wifi{display:block;margin:0 1px}
+.sigbars{display:block}
+#carrierLbl{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:76px}
+.batt{display:flex;align-items:center}
+.battshell{position:relative;width:26px;height:11px;border:0.9px solid #fff;border-radius:2.5px;overflow:hidden}
+.battshell:after{content:"";position:absolute;right:-2.2px;top:3px;width:1.2px;height:5px;background:#fff;border-radius:0 1px 1px 0}
+.battfill{position:absolute;inset:1px;border-radius:1.5px}
+.battnum{position:relative;z-index:1;height:100%;display:flex;align-items:center;justify-content:center;font-size:7.5px;font-weight:800;letter-spacing:-.2px}
+
+.contact{text-align:center;padding:2px 0 10px;border-bottom:1px solid #ffffff12}
+.contact .av{width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,#3a3c46,#222329);margin:0 auto 4px;display:grid;place-items:center;font-size:12px;font-weight:700;color:#c9c9d1}
+.contact .nm{font-size:11px;color:#c9c9d1;font-weight:600}
+
+.chat{min-height:290px;padding:30px 14px 30px;position:relative;display:flex;flex-direction:column;overflow:hidden}
+.chat:before{content:"";position:absolute;inset:-30px;z-index:0;opacity:.8;filter:blur(30px);
+  background:radial-gradient(140px 90px at 18% 6%,#55565f8c,transparent 62%),
+             radial-gradient(170px 70px at 75% 3%,#3c3d478c,transparent 65%),
+             radial-gradient(160px 120px at 40% 96%,#2c2d358c,transparent 60%)}
+
+.tapback{position:relative;z-index:1;align-self:flex-start;display:flex;align-items:center;gap:7px;
+  background:#3a3a3ecc;backdrop-filter:blur(16px);border-radius:20px;padding:5px 8px;margin-bottom:10px;box-shadow:0 8px 20px #0007}
+.tbEmoji{font-size:14px;transition:transform .12s;cursor:default}
+.tbEmoji.sel{transform:scale(1.35)}
+.tbMore{width:16px;height:16px;border-radius:50%;background:#55555c;color:#ddd;font-size:11px;display:grid;place-items:center;line-height:1}
+
+.bubbleWrap{position:relative;z-index:1;display:inline-block;max-width:90%;align-self:flex-start}
+.bubbleWrap.out{align-self:flex-end;margin-top:8px}
+.msg{position:relative;padding:8px 12px;border-radius:18px;font-size:12.5px;line-height:1.32;color:#fff;margin-top:0}
+.msg.in{background:var(--bubble-in);border-bottom-left-radius:5px}
+.msg.out{background:linear-gradient(135deg,var(--bubble-out-a),var(--bubble-out-b));border-bottom-right-radius:5px}
+.time2{font-size:10.5px;color:#8a8a92;text-align:right;margin:4px 2px 0}
+
+.menu{position:relative;z-index:1;align-self:flex-start;max-width:80%;margin:14px 0 0;background:#39393ee6;backdrop-filter:blur(14px);border-radius:13px;overflow:hidden;box-shadow:0 10px 26px #0008}
+.menu div{padding:7px 10px;font-size:11px;color:#eee;border-bottom:1px solid #ffffff14;display:flex;justify-content:space-between;align-items:center}
+.menu div:last-child{border:0}
+.menu div.danger{color:#ff5b56}
+.menu2{margin-top:9px}
+
+.foot{text-align:center;margin-top:26px}
+.foot .credit{font-size:11px;color:var(--dim);font-weight:600}
+.foot .note{font-size:10.5px;color:#565866;margin-top:4px;line-height:1.4}
+
+.landing{position:relative;z-index:1;min-height:100dvh;display:flex;align-items:center;justify-content:center;padding:24px}
+.landingInner{text-align:center;transform:translateY(-18%);display:flex;flex-direction:column;align-items:center;gap:22px}
+.landingMark{margin:0 0 4px}
+.landingCard{background:var(--panel);border:1px solid var(--line);border-radius:26px;padding:26px 22px}
+.rgbText{margin:0;font-size:25px;font-weight:800;line-height:1.28;letter-spacing:.1px;
+  background:linear-gradient(90deg,#ff3b30,#ffd400,#34d399,#22d3ee,#6366f1,#d946ef,#ff3b30);
+  background-size:300% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;
+  animation:rgbShift 6s linear infinite}
+@keyframes rgbShift{0%{background-position:0% 50%}100%{background-position:300% 50%}}
+.enterBtn{border:1.5px solid var(--amber);border-radius:13px;padding:13px 26px;color:var(--amber);font-weight:700;font-size:14px;background:transparent;cursor:pointer;letter-spacing:.2px;
+  box-shadow:0 0 10px #ffb15e55, inset 0 0 8px #ffb15e1f;text-shadow:0 0 8px #ffb15e99;
+  animation:neonPulse 2.4s ease-in-out infinite}
+@keyframes neonPulse{0%,100%{box-shadow:0 0 8px #ffb15e4d, inset 0 0 6px #ffb15e1a}50%{box-shadow:0 0 18px #ffb15eb3, inset 0 0 10px #ffb15e33}}
+.enterBtn:active{transform:scale(.97)}
+.spark{position:fixed;width:6px;height:6px;border-radius:50%;pointer-events:none;z-index:999;animation:sparkFly .55s ease-out forwards}
+@keyframes sparkFly{to{transform:translate(var(--dx),var(--dy)) scale(0);opacity:0}}
+
+.taphint{font-size:10.5px;color:var(--dim);text-align:center;margin-top:12px}
+.dlWrap{text-align:center;margin-top:10px}
+.dlBtn{border:0;background:linear-gradient(135deg,#ff7a59,#ffb15e 55%,#ffd76b);color:#241000;border-radius:12px;padding:10px 20px;font-size:13px;font-weight:800;cursor:pointer;display:inline-flex;align-items:center;gap:7px;
+  box-shadow:0 0 14px #ff8a4d55,0 6px 16px #0006;animation:dlGlow 2.6s ease-in-out infinite}
+@keyframes dlGlow{0%,100%{box-shadow:0 0 14px #ff8a4d55,0 6px 16px #0006}50%{box-shadow:0 0 26px #ff9a5aa8,0 6px 20px #0007}}
+.dlBtn:active{transform:scale(.96)}
+.dlBtn.busy{opacity:.55;pointer-events:none}
+</style>
+</head>
+<body>
+
+<div class="landing" id="landing">
+  <div class="landingInner">
+    <div class="mark landingMark">SV</div>
+    <div class="landingCard">
+      <h1 class="rgbText">Welcome To<br>SXVV Chat Generator</h1>
+    </div>
+    <button class="enterBtn" onclick="burstAndEnter(this)">Masuk ke Generator</button>
+  </div>
+</div>
+
+<div class="wrap" id="mainApp" style="display:none">
+
+  <div class="brand">
+    <div class="mark">SV</div>
+    <div>
+      <h1>SXVV Chat Generator</h1>
+      <p>Buat mockup tampilan chat iOS</p>
+    </div>
+  </div>
+
+  <div class="panel">
+    <p class="section-label">Status bar</p>
+    <div class="row">
+      <div class="field">
+        <label>Baterai</label>
+        <input id="battery" type="number" min="1" max="100" value="88" oninput="generate()" onblur="clampBattery()">
+      </div>
+      <div class="field">
+        <label>Sinyal</label>
+        <select id="signal" oninput="generate()">
+          <option>5G</option><option selected>LTE</option><option>4G</option><option>3G</option><option>Wi-Fi</option><option>SOS</option>
+        </select>
+      </div>
+    </div>
+    <div class="row">
+      <div class="field">
+        <label>Provider</label>
+        <input id="provider" value="Indosat" oninput="generate()">
+      </div>
+      <div class="field">
+        <label>Jam</label>
+        <div class="timerow">
+          <input id="time" value="11:11" oninput="generate()">
+          <button class="nowbtn" type="button" onclick="useNow()">Now</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <p class="section-label">Percakapan</p>
+    <div class="field">
+      <label>Nama kontak</label>
+      <input id="contact" value="Kontak" oninput="generate()">
+    </div>
+    <div class="field">
+      <label>Pesan masuk</label>
+      <textarea id="message" oninput="generate()">Tidak pernah menjadi bintang, tapi tak pernah dikenal karena terlalu terang</textarea>
+    </div>
+    <div class="field">
+      <label>Pesan balasan (opsional, tampil sebagai bubble keluar)</label>
+      <textarea id="reply" oninput="generate()" placeholder="Kosongkan kalau gak perlu"></textarea>
+    </div>
+    <div class="field">
+      <label>Reaksi (tapback)</label>
+      <select id="reaction" oninput="generate()">
+        <option value="🔥" selected>🔥 Fire</option>
+        <option value="⚡">⚡ Zap</option>
+        <option value="🚀">🚀 Rocket</option>
+      </select>
+    </div>
+
+    <div class="row" style="margin-top:16px">
+      <button class="generate" style="margin-top:0;flex:1" onclick="generate()">Buat</button>
+      <button class="nowbtn" style="flex-shrink:0;padding:0 16px" type="button" onclick="resetFields()">Reset</button>
+    </div>
+  </div>
+
+  <div class="resultTitle">Hasil</div>
+
+  <div class="phoneOuter">
+    <div class="phone">
+      <div class="screen">
+        <div class="notch"></div>
+        <div class="homebar"></div>
+        <div class="status">
+          <span class="time" id="clock">11:11</span>
+          <div class="stat-right">
+            <span id="sigLabel" style="display:none"></span>
+            <span id="sosLabel" style="display:none;letter-spacing:.3px">SOS</span>
+            <svg class="sigbars" id="sigbars" viewBox="0 0 18 12" width="15" height="10"><rect x="0" y="7" width="3" height="5" rx="0.7" fill="#fff"/><rect x="5" y="5" width="3" height="7" rx="0.7" fill="#fff"/><rect x="10" y="3" width="3" height="9" rx="0.7" fill="#fff"/><rect x="15" y="1" width="3" height="11" rx="0.7" fill="#fff"/></svg>
+            <svg class="wifi" id="wifiIcon" viewBox="0 0 16 12" width="11" height="9"><path d="M8 10.4a1.1 1.1 0 1 1 0-2.2 1.1 1.1 0 0 1 0 2.2zM4.9 7.2a4.6 4.6 0 0 1 6.2 0 .55.55 0 0 1-.75.8 3.5 3.5 0 0 0-4.7 0 .55.55 0 0 1-.75-.8zM2.6 4.6a8.2 8.2 0 0 1 10.8 0 .55.55 0 1 1-.73.82 7.1 7.1 0 0 0-9.34 0 .55.55 0 1 1-.73-.82z" fill="#fff"/></svg>
+            <span class="batt"><span class="battshell"><span class="battfill" id="battfill"></span><span class="battnum" id="battpct">88</span></span></span>
+          </div>
+        </div>
+        <div class="contact">
+          <div class="av" id="avatar">K</div>
+          <div class="nm" id="contactName">Kontak</div>
+        </div>
+        <div class="chat">
+          <div class="tapback" id="tapback">
+            <span class="tbEmoji" data-v="🔥">🔥</span><span class="tbEmoji" data-v="⚡">⚡</span><span class="tbEmoji" data-v="🚀">🚀</span><span class="tbMore">+</span>
+          </div>
+          <div class="bubbleWrap">
+            <div class="msg in">
+              <span id="showmsg">Tidak pernah menjadi bintang, tapi tak pernah dikenal karena terlalu terang</span>
+            </div>
+            <div class="time2" id="time2">11:11</div>
+          </div>
+          <div class="bubbleWrap out" id="replyWrap" style="display:none">
+            <div class="msg out"><span id="showReply"></span></div>
+          </div>
+          <div class="menu">
+            <div>Membalas <span><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 14 4 9 9 4"/><path d="M20 20v-7a4 4 0 0 0-4-4H4"/></svg></span></div>
+            <div>Teruskan <span><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 14 20 9 15 4"/><path d="M4 20v-7a4 4 0 0 1 4-4h12"/></svg></span></div>
+            <div>Salin <span><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg></span></div>
+            <div>Beri Bintang <span><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></span></div>
+            <div class="danger">Hapus <span><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="#ff5b56" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg></span></div>
+          </div>
+          <div class="menu menu2">
+            <div>Lainnya... <span></span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="taphint">Tekan tombol di bawah untuk download PNG kualitas tinggi</div>
+  <div class="dlWrap"><button class="dlBtn" id="dlBtn" onclick="saveHighRes()">⬇ Download Gambar</button></div>
+
+  <div class="foot">
+    <div class="credit">SXVV Chat Generator • SV</div>
+    <div class="note">Mockup tampilan chat, bukan aplikasi pesan asli dan tidak mengubah aplikasi apa pun.</div>
+  </div>
+
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script>
+
+function clampBattery(){
+  const el = document.getElementById('battery');
+  let v = parseInt(el.value);
+  if(isNaN(v)) v = 88;
+  v = Math.max(1, Math.min(100, v));
+  el.value = v;
+  generate();
+}
+const DEFAULTS = {
+  battery:'88', provider:'Indosat', time:'11:11', signal:'LTE', contact:'Kontak',
+  message:'Tidak pernah menjadi bintang, tapi tak pernah dikenal karena terlalu terang',
+  reply:'', reaction:'🔥'
+};
+function resetFields(){
+  document.getElementById('battery').value = DEFAULTS.battery;
+  document.getElementById('provider').value = DEFAULTS.provider;
+  document.getElementById('time').value = DEFAULTS.time;
+  document.getElementById('signal').value = DEFAULTS.signal;
+  document.getElementById('contact').value = DEFAULTS.contact;
+  document.getElementById('message').value = DEFAULTS.message;
+  document.getElementById('reply').value = DEFAULTS.reply;
+  document.getElementById('reaction').value = DEFAULTS.reaction;
+  generate();
+}
+function useNow(){
+  const d=new Date();
+  const hh=String(d.getHours()).padStart(2,'0'), mm=String(d.getMinutes()).padStart(2,'0');
+  document.getElementById('time').value = hh+':'+mm;
+  generate();
+}
+function generate(){
+  const b = Math.max(1, Math.min(100, parseInt(document.getElementById('battery').value)||88));
+  const p = document.getElementById('provider').value || 'Indosat';
+  const t = document.getElementById('time').value || '11:11';
+  const s = document.getElementById('signal').value || 'LTE';
+  const contact = document.getElementById('contact').value || 'Kontak';
+  const m = document.getElementById('message').value || '';
+  const reply = document.getElementById('reply').value.trim();
+  const r = document.getElementById('reaction').value || '❤️';
+
+  document.getElementById('clock').textContent = t;
+  const isSOS = s === 'SOS';
+  const isWifi = s === 'Wi-Fi';
+  const isData = !isSOS && !isWifi;
+  document.getElementById('sigLabel').textContent = s;
+  document.getElementById('sigLabel').style.display = isData ? 'inline' : 'none';
+  document.getElementById('sosLabel').style.display = isSOS ? 'inline' : 'none';
+  document.getElementById('sigbars').style.display = (isSOS || isWifi) ? 'none' : 'block';
+  document.getElementById('wifiIcon').style.display = isWifi ? 'block' : 'none';
+  const battLow = b < 20;
+  document.getElementById('battfill').style.background = battLow ? '#ff3b30' : '#ffd400';
+  const battpctEl = document.getElementById('battpct');
+  battpctEl.textContent = b;
+  battpctEl.style.color = battLow ? '#ffffff' : '#241a00';
+  document.getElementById('contactName').textContent = contact;
+  document.getElementById('avatar').textContent = contact.trim().charAt(0).toUpperCase() || 'K';
+  document.getElementById('showmsg').textContent = m;
+  document.getElementById('time2').textContent = t;
+  document.querySelectorAll('.tbEmoji').forEach(function(el){
+    el.classList.toggle('sel', el.dataset.v === r);
+  });
+  const replyWrap = document.getElementById('replyWrap');
+  if(reply){
+    document.getElementById('showReply').textContent = reply;
+    replyWrap.style.display = 'inline-block';
+  } else {
+    replyWrap.style.display = 'none';
+  }
+  void document.querySelector('.phone').offsetWidth;
+  document.querySelector('.phone').style.transform='scale(.995)';
+  requestAnimationFrame(()=>{document.querySelector('.phone').style.transform='scale(1)'});
+}
+function burstAndEnter(btn){
+  const rect = btn.getBoundingClientRect();
+  const cx = rect.left + rect.width/2, cy = rect.top + rect.height/2;
+  const colors = ['#ff3b30','#ffd400','#34d399','#22d3ee','#6366f1','#d946ef','#ffb15e'];
+  for(let i=0;i<16;i++){
+    const s = document.createElement('span');
+    s.className = 'spark';
+    const angle = Math.random()*Math.PI*2;
+    const dist = 55 + Math.random()*75;
+    s.style.setProperty('--dx', (Math.cos(angle)*dist)+'px');
+    s.style.setProperty('--dy', (Math.sin(angle)*dist)+'px');
+    s.style.left = cx+'px';
+    s.style.top = cy+'px';
+    s.style.background = colors[i % colors.length];
+    document.body.appendChild(s);
+    setTimeout(()=>s.remove(), 600);
+  }
+  setTimeout(enterApp, 380);
+}
+
+function enterApp(){
+  document.getElementById('landing').style.display='none';
+  document.getElementById('mainApp').style.display='block';
+  generate();
+}
+
+document.querySelector('.phone').style.transition='transform .18s ease';
+generate();
+
+async function saveHighRes(){
+  const btn = document.getElementById('dlBtn');
+  const label = btn ? btn.textContent : '';
+  if(btn){ btn.textContent='Menyimpan...'; btn.classList.add('busy'); }
+  try{
+    const target = document.querySelector('.screen');
+    const prevRadius = target.style.borderRadius;
+    target.style.borderRadius = '0';
+    const canvas = await html2canvas(target, {scale:3, backgroundColor:'#000000', useCORS:true});
+    target.style.borderRadius = prevRadius;
+    const blob = await new Promise(res=>canvas.toBlob(res,'image/png'));
+    if(!blob) return;
+
+    let dl = null;
+    if(window.claude && typeof window.claude.use === 'function'){
+      try{ dl = await window.claude.use('downloads'); }catch(e){ dl = null; }
+    }
+
+    if(dl){
+      try{
+        await dl.save({filename:'sxvv-chat.png', data: blob});
+      }catch(e){
+        console.warn('Gambar tidak tersimpan:', e && e.code);
+      }
+    } else {
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = 'sxvv-chat.png';
+      document.body.appendChild(a); a.click(); document.body.removeChild(a);
+      setTimeout(()=>URL.revokeObjectURL(url), 4000);
+    }
+  } catch(err){
+    console.error(err);
+  } finally {
+    if(btn){ btn.textContent=label; btn.classList.remove('busy'); }
+  }
+}
+</script>
+</body>
+</html>
